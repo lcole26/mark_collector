@@ -5,4 +5,5 @@ export const list_of_keys = [
 ];
 export const x_rapidapi_host = "ekman-emotion-analysis.p.rapidapi.com";
 export const x_rapidapi_key = "dcc9ce79a6msh1587e0491ee7c19p13b5eejsnde5141957af1";
+// export const deploy_key = "dcc9ce79a6msh1587e0491ee7c19p13b5eejsnde5141957af1";
 export const endpoint = "https://ekman-emotion-analysis.p.rapidapi.com/ekman-emotion";
