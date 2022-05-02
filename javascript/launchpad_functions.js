@@ -10,17 +10,19 @@ import { default_language, formatData, getAnalysis, currentRequests, tryAnalysis
 import { paired_note_words, noteOnVelocity, noteOffVelocity, padPressCommand, enterKeyCommand, inputName } from "./main.js";
 import { list_of_keys } from "./rapidapi_things.js";
 import { map_num, random_in_range } from "./utility.js";
-import { midi_to_frequency } from "./wad_things.js";
-var currentDataStack = [];
+import { midi_to_frequency, PlayOscAtIndex } from "./wad_things.js";
+
+// var currentDataStack = [];
+// export var osc_collector = [];
 let device;
 let current_formatted_data_id = 0;
 export var currentAnalysis = null;
 let current_pred;
 
-// let mark_collect_manager = {
-//   currentWordStack: [],
-//   currentMidiDataStack: []
-// };
+export var mark_collect_manager = {
+  current_data_stack: [],
+  osc_collector: []
+};
 
 
 
@@ -78,10 +80,11 @@ export function handleInput(input) {
    *  - the actual input we want to check against, to make sure we aren't double sending API requests/multi-sending requests,
    *  - whether this array is indeed an array (nullcheck), and also check length > 0
    */
-  if (command === enterKeyCommand && input.srcElement.name === inputName && (currentDataStack && !currentDataStack.length == 0)) {
+  // if (command === enterKeyCommand && input.srcElement.name === inputName && (currentDataStack && !currentDataStack.length == 0)) {
+  if (command === enterKeyCommand && input.srcElement.name === inputName && (mark_collect_manager.current_data_stack && !mark_collect_manager.current_data_stack.length == 0)) {
     console.log(`enter key pressed`);
     // clearAll();
-    let result = extractDataFromCurrentBuffer(currentDataStack);
+    let result = extractDataFromCurrentBuffer(mark_collect_manager.current_data_stack);
     console.log(`text result is: ${result.text}`);
 
     let formatted_text = formatData(current_formatted_data_id, default_language, result.text);
@@ -100,14 +103,56 @@ export function handleInput(input) {
     //     console.log(`e: ${element}`);
     //   });
     // }
+
+    console.log(`miditofreq of 57: ${midi_to_frequency(57)}`);
     let afflicted_data = result.note_stats.map(function (element) {
       // mapped_prediction_prob = map_num(p.probability, 0, 1, 0, element.note_pitch);
       return (midi_to_frequency(element.note_pitch) / 1.0);
     });
-
-    // console.log(`miditofreq of 57: ${midi_to_frequency(57)}`);
-
     console.log(`afflicted data in handleInput: ${afflicted_data}`);
+
+    var chain_osc = new Wad.Poly();
+    let osc_array = [];
+    afflicted_data.forEach(frequency => {
+      let new_osc = new Wad({
+        source: 'sine',
+        pitch: frequency,
+        volume: 0.1,
+        env: {
+          hold: 7,
+          sustain: .2,
+        },
+        loop: true,
+        panning: [random_in_range(0, 1), random_in_range(0, 1), random_in_range(0, 1)],
+        panningModel: 'HRTF',
+        rolloffFactor: 1 // other properties of the panner node can be specified in the constructor, or on play()
+      });
+
+      osc_array.push(new_osc);
+
+
+      chain_osc.add(new_osc);
+    });
+
+    let iterator = new Wad.SoundIterator({
+      files: osc_array,
+      random: true,
+      randomPlaysBeforeRepeat: 0,
+    });
+
+    mark_collect_manager.osc_collector.forEach(frequency => {
+      // chain_osc.play();
+      iterator.play();
+    });
+
+    // osc_collector.push({ text_and_midi: result, osc: chain_osc });
+    // osc_collector.push({ text_and_midi: result, osc: iterator });
+    mark_collect_manager.osc_collector.push({ text_and_midi: result, osc: chain_osc });
+    mark_collect_manager.osc_collector.push({ text_and_midi: result, osc: iterator });
+    // PlayOscAtIndex(1);
+
+    // console.log(`current osc_collector length: ${osc_collector.length}`);
+
   }
 
   // console.log(`wotofok: ${current_pred}`);
@@ -124,8 +169,8 @@ export function handleInput(input) {
 
   // check if pad has been released
   if (keyval && command === padPressCommand && velocity === noteOffVelocity && input.srcElement.name === inputName) {
-    console.log(`current_text is: ${JSON.stringify(currentDataStack)}`);
-    currentDataStack.push({ note: keyval.note_pitch, word: keyval.word, keypress_duration: keyval.keypress_duration });
+    console.log(`current_text is: ${JSON.stringify(mark_collect_manager.current_data_stack)}`);
+    mark_collect_manager.current_data_stack.push({ note: keyval.note_pitch, word: keyval.word, keypress_duration: keyval.keypress_duration });
     let found_note = paired_note_words.find(e => e.note_pitch == note);
     if (found_note && found_note.note_on === true && found_note.duration_setinterval_id !== null) {
       // found_note.note_on = false;
@@ -218,7 +263,7 @@ export var handle_analysis = function (analysis) {
       case 'fear':
         afflicted_data = data_stack.note_stats.map(function (element) {
           mapped_prediction_prob = map_num(p.probability, 0, 1, 0, element.note_pitch);
-          midi_to_frequency(element.note_pitch) * random_in_range(mapped_prediction_prob, e.notlemente_pitch);
+          return midi_to_frequency(element.note_pitch) * random_in_range(mapped_prediction_prob, e.notlemente_pitch);
         });
         break;
       case 'joy':
@@ -242,7 +287,7 @@ export var handle_analysis = function (analysis) {
       case 'surprise':
         afflicted_data = data_stack.note_stats.map(function (element) {
           mapped_prediction_prob = map_num(p.probability, 0, 1, 0, element.note_pitch);
-          return midi_to_frequency(element.note_pitch) - 5.0;
+          return midi_to_frequency(element.note_pitch) + random_in_range(0, element.note_pitch);
         });
         break;
       default:
@@ -270,7 +315,7 @@ var extractDataFromCurrentBuffer = function () {
   let wordArray = "";
   let note_statistics_array = [];
 
-  currentDataStack.forEach(element => {
+  mark_collect_manager.current_data_stack.forEach(element => {
     console.log(`current word pair is ${JSON.stringify(element)}`);
     wordArray += `${element.word} `;
     note_statistics_array.push({ note_pitch: element.note, keypress_duration: element.keypress_duration });
@@ -279,7 +324,7 @@ var extractDataFromCurrentBuffer = function () {
   // console.log(`values are: ${currentText.values()}`);
 
   // cleart current_text array and return
-  currentDataStack.length = 0;
+  mark_collect_manager.current_data_stack.length = 0;
 
   return { text: wordArray.trim(), note_stats: note_statistics_array };
 };
@@ -315,4 +360,6 @@ var key_has_been_depressed = function (found_note) {
 var get_current_keypress_duration = function (found_note) {
   return found_note.keypress_duration;
 };
+
+
 
