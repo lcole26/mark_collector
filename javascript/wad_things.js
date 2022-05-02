@@ -5,7 +5,7 @@ export const equal_temperament_hz = 440;
 
 // from here: https://en.wikipedia.org/wiki/MIDI_tuning_standard
 export var midi_to_frequency = function (note) {
-  let r = Math.pow(2.0, (note - 69.0) / 12) * equal_temperament_hz;
+  return Math.pow(2.0, (note - 69.0) / 12) * equal_temperament_hz;
 };
 
 
@@ -49,5 +49,5 @@ var saw = new Wad({
     // }
   },
 });
-saw.play();
+// saw.play();
 

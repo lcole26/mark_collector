@@ -2,7 +2,7 @@
 // import { x_rapidapi_host } from "./rapidapi_things";
 import { x_rapidapi_host, x_rapidapi_key, list_of_keys } from "./rapidapi_things.js";
 import { handle_analysis } from "./launchpad_functions.js";
-const emotions = ['anger', 'disgust', 'fear', 'joy', 'no-emotion', 'sadness', 'surprise'];
+export const emotion_type_list = ['anger', 'disgust', 'fear', 'joy', 'no-emotion', 'sadness', 'surprise'];
 export const default_language = "en";
 
 export var currentRequests = [];

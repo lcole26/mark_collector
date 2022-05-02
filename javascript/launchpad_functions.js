@@ -6,7 +6,7 @@
 // https://url-decode.com/tool/create-array-js
 
 // import Launchpad from "launchpad-mini/launchpad-mini";
-import { default_language, formatData, getAnalysis, currentRequests, tryAnalysisWithKey } from "./api_things.js";
+import { default_language, formatData, getAnalysis, currentRequests, tryAnalysisWithKey, emotion_type_list } from "./api_things.js";
 import { paired_note_words, noteOnVelocity, noteOffVelocity, padPressCommand, enterKeyCommand, inputName } from "./main.js";
 import { list_of_keys } from "./rapidapi_things.js";
 import { map_num, random_in_range } from "./utility.js";
@@ -86,12 +86,10 @@ export function handleInput(input) {
 
     let formatted_text = formatData(current_formatted_data_id, default_language, result.text);
     result.note_stats.forEach(note_stat => {
-      console.log(`note_stat is: ${note_stat.note_pitch} | ${note_stat.keypress_duration}`);
+      console.log(`note_stat is: ${result.text} | ${note_stat.note_pitch} | ${note_stat.keypress_duration}`);
     });
     // let output = "";
     // let analysis = getAnalysis([formatted_text]);
-    // let analysis = getAnalysis2([formatted_text]);
-    // console.log(`output: ${output}`);
     // if (analysis) {
     //   handle_analysis(analysis);
     // }
@@ -102,9 +100,17 @@ export function handleInput(input) {
     //     console.log(`e: ${element}`);
     //   });
     // }
+    let afflicted_data = result.note_stats.map(function (element) {
+      // mapped_prediction_prob = map_num(p.probability, 0, 1, 0, element.note_pitch);
+      return (midi_to_frequency(element.note_pitch) / 1.0);
+    });
+
+    // console.log(`miditofreq of 57: ${midi_to_frequency(57)}`);
+
+    console.log(`afflicted data in handleInput: ${afflicted_data}`);
   }
 
-  console.log(`wotofok: ${current_pred}`);
+  // console.log(`wotofok: ${current_pred}`);
   // check if pad has been pressed
   if (keyval && command === padPressCommand && velocity === noteOnVelocity && input.srcElement.name === inputName) {
     console.log(`word is: ${keyval.note_pitch} ${keyval.word} with note: ${velocity === noteOnVelocity ? "On" : "Off"}`);
@@ -192,47 +198,57 @@ export var handle_analysis = function (analysis) {
   // mapped_prediction_prob = map_num(p.probability, 0, 1, 0, 127);
   analysis.predictions.forEach(p => {
     console.log(`id: ${analysis.id} | prediction: ${p.prediction} | prob: ${p.probability}`);
-    mapped_prediction_prob = map_num(p.probability, 0, 1, 0, e.note_pitch);
 
     switch (p.prediction) {
       case 'anger':
-        afflicted_data = data_stack.note_stats.map(e => {
-          (midi_to_frequency(e.note_pitch) / mapped_prediction_prob);
+        // afflicted_data = data_stack.note_stats.map(function(e)) {
+        //   return (midi_to_frequency(e.note_pitch) / mapped_prediction_prob);
+        // };
+        afflicted_data = data_stack.note_stats.map(function (element) {
+          mapped_prediction_prob = map_num(p.probability, 0, 1, 0, element.note_pitch);
+          return (midi_to_frequency(element.note_pitch) / mapped_prediction_prob);
         });
         break;
       case 'disgust':
-        afflicted_data = data_stack.note_stats.map(e => {
-          midi_to_frequency(e.note_pitch) - 5.0;
+        afflicted_data = data_stack.note_stats.map(function (element) {
+          mapped_prediction_prob = map_num(p.probability, 0, 1, 0, element.note_pitch);
+          return (midi_to_frequency(element.note_pitch) - 5.0);
         });
         break;
       case 'fear':
-        afflicted_data = data_stack.note_stats.map(e => {
-          midi_to_frequency(e.note_pitch) * random_in_range(mapped_prediction_prob, e.note_pitch);
+        afflicted_data = data_stack.note_stats.map(function (element) {
+          mapped_prediction_prob = map_num(p.probability, 0, 1, 0, element.note_pitch);
+          midi_to_frequency(element.note_pitch) * random_in_range(mapped_prediction_prob, e.notlemente_pitch);
         });
         break;
       case 'joy':
-        afflicted_data = data_stack.note_stats.map(e => {
-          midi_to_frequency(e.note_pitch) - 5.0;
+        afflicted_data = data_stack.note_stats.map(function (element) {
+          mapped_prediction_prob = map_num(p.probability, 0, 1, 0, element.note_pitch);
+          return midi_to_frequency(element.note_pitch) - 5.0;
         });
         break;
       case 'no-emotion':
-        afflicted_data = data_stack.note_stats.map(e => {
-          midi_to_frequency(e.note_pitch) - 5.0;
+        afflicted_data = data_stack.note_stats.map(function (element) {
+          mapped_prediction_prob = map_num(p.probability, 0, 1, 0, element.note_pitch);
+          return midi_to_frequency(element.note_pitch) - 5.0;
         });
         break;
       case 'sadness':
-        afflicted_data = data_stack.note_stats.map(e => {
-          midi_to_frequency(e.note_pitch) - 5.0;
+        afflicted_data = data_stack.note_stats.map(function (element) {
+          mapped_prediction_prob = map_num(p.probability, 0, 1, 0, element.note_pitch);
+          return midi_to_frequency(element.note_pitch) - 5.0;
         });
         break;
       case 'surprise':
-        afflicted_data = data_stack.note_stats.map(e => {
-          midi_to_frequency(e.note_pitch) - 5.0;
+        afflicted_data = data_stack.note_stats.map(function (element) {
+          mapped_prediction_prob = map_num(p.probability, 0, 1, 0, element.note_pitch);
+          return midi_to_frequency(element.note_pitch) - 5.0;
         });
         break;
       default:
-        afflicted_data = data_stack.note_stats.map(e => {
-          midi_to_frequency(e.note_pitch);
+        afflicted_data = data_stack.note_stats.map(function (element) {
+          mapped_prediction_prob = map_num(p.probability, 0, 1, 0, element.note_pitch);
+          return midi_to_frequency(element.note_pitch);
         });
         break;
     }
@@ -266,6 +282,10 @@ var extractDataFromCurrentBuffer = function () {
   currentDataStack.length = 0;
 
   return { text: wordArray.trim(), note_stats: note_statistics_array };
+};
+
+var return_emotion_type = function (emotion) {
+  return emotion_type_list.find(e => e === emotion);
 };
 
 // -----------------------------------------------------------------------------------------------------------------------------
