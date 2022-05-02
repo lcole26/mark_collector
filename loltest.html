@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+    integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <script type="module" src="./javascript/rapidapi_things.js"></script>
+  <script type="module" src="./javascript/weather_api.js"></script>
+
+  <title>Document</title>
+</head>
+
+<body>
+  <script>
+    api();
+
+    function api() {
+
+      let f = {
+        "id": "1",
+        "language": "en",
+        "text": "I love the service"
+      };
+
+      // let stringified = JSON.stringify(f);
+
+      const settings = {
+        "async": true,
+        "crossDomain": true,
+        "url": "https://ekman-emotion-analysis.p.rapidapi.com/ekman-emotion",
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json",
+          "Accept": "application/json",
+          "X-RapidAPI-Host": "ekman-emotion-analysis.p.rapidapi.com",
+          "X-RapidAPI-Key": "dcc9ce79a6msh1587e0491ee7c19p13b5eejsnde5141957af1"
+        },
+        "processData": false,
+        "data": JSON.stringify(f),
+        "dataType": "json",
+      };
+
+      $.ajax(settings).done(function (response) {
+        console.log(response);
+      });
+
+    }
+  </script>
+</body>
+
+</html>

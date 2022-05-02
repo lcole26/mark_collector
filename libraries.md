@@ -1,0 +1,21 @@
+- libraries/api
+  - wad API
+    - for sound
+    - https://github.com/rserota/wad#api-documentation
+  - Sentiment analysis
+    - 
+    - https://rapidapi.com/twinword/api/twinword-text-analysis-bundle/details
+- plan
+  - hardcode a list of the most important words in english (64+), and tuple them with some sort of frequency for wad to play
+  - when the user presses a pad, play that sound frequency/clip, and store the word/tuple pair in a document[] array
+  - when the user is done, send off the text to a sentiment analysis api
+  - play back the resulting anaylsis data with wad/show to user
+  - data to show/hide
+    - show
+    - hide
+- references
+  - https://www.thoughtco.com/important-words-in-english-1692687 
+- results
+  - -ex:
+    - [{"note_pitch":60,"word":"Event"},{"note_pitch":61,"word":"Examples"},{"note_pitch":62,"word":"Existence"},{"note_pitch":63,"word":"Experience"},{"note_pitch":56,"word":"Different"}]
+      - returns {prediction: "fear" probability: 0.98255}
