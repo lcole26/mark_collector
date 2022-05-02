@@ -1,7 +1,9 @@
 // import { possible_notes } from "./launchpad_functions";
 // import { x_rapidapi_host } from "./rapidapi_things";
+import { extractDataFromCurrentBuffer } from "./launchpad_functions.js";
 import { x_rapidapi_host, x_rapidapi_key, list_of_keys } from "./rapidapi_things.js";
-import { handle_analysis } from "./launchpad_functions.js";
+import { random_in_range } from "./utility.js";
+// import { handle_analysis } from "./launchpad_functions.js";
 export const emotion_type_list = ['anger', 'disgust', 'fear', 'joy', 'no-emotion', 'sadness', 'surprise'];
 export const default_language = "en";
 
@@ -38,7 +40,7 @@ function constructAnalysisArray(texts) {
  * takes in a 
  * @param {*} data 
  */
-export function getAnalysis(data) {
+export function processAnalysis(data) {
   const options = {
     method: 'POST',
     headers: {
@@ -99,6 +101,84 @@ export function tryAnalysisWithKey(data, api_key) {
     })
     .catch(err => console.error(err));
 }
+
+
+var handle_analysis = function (analysis) {
+  let id = analysis.id;
+
+  let data_stack = extractDataFromCurrentBuffer();
+  // let id = analysis.id;
+  let afflicted_data = null;
+  let predictions = [];
+  let mapped_prediction_prob;
+  let rand = random_in_range(0, 127);
+  // mapped_prediction_prob = map_num(p.probability, 0, 1, 0, 127);
+  analysis.predictions.forEach(p => {
+    console.log(`id: ${analysis.id} | prediction: ${p.prediction} | prob: ${p.probability}`);
+
+    switch (p.prediction) {
+      case 'anger':
+        // afflicted_data = data_stack.note_stats.map(function(e)) {
+        //   return (midi_to_frequency(e.note_pitch) / mapped_prediction_prob);
+        // };
+        afflicted_data = data_stack.note_stats.map(function (element) {
+          mapped_prediction_prob = map_num(p.probability, 0, 1, 0, element.note_pitch);
+          return (midi_to_frequency(element.note_pitch) / mapped_prediction_prob);
+        });
+        break;
+      case 'disgust':
+        afflicted_data = data_stack.note_stats.map(function (element) {
+          mapped_prediction_prob = map_num(p.probability, 0, 1, 0, element.note_pitch);
+          return (midi_to_frequency(element.note_pitch) - 5.0);
+        });
+        break;
+      case 'fear':
+        afflicted_data = data_stack.note_stats.map(function (element) {
+          mapped_prediction_prob = map_num(p.probability, 0, 1, 0, element.note_pitch);
+          return midi_to_frequency(element.note_pitch) * random_in_range(mapped_prediction_prob, e.notlemente_pitch);
+        });
+        break;
+      case 'joy':
+        afflicted_data = data_stack.note_stats.map(function (element) {
+          mapped_prediction_prob = map_num(p.probability, 0, 1, 0, element.note_pitch);
+          return midi_to_frequency(element.note_pitch) - 5.0;
+        });
+        break;
+      case 'no-emotion':
+        afflicted_data = data_stack.note_stats.map(function (element) {
+          mapped_prediction_prob = map_num(p.probability, 0, 1, 0, element.note_pitch);
+          return midi_to_frequency(element.note_pitch) - 5.0;
+        });
+        break;
+      case 'sadness':
+        afflicted_data = data_stack.note_stats.map(function (element) {
+          mapped_prediction_prob = map_num(p.probability, 0, 1, 0, element.note_pitch);
+          return midi_to_frequency(element.note_pitch) - 5.0;
+        });
+        break;
+      case 'surprise':
+        afflicted_data = data_stack.note_stats.map(function (element) {
+          mapped_prediction_prob = map_num(p.probability, 0, 1, 0, element.note_pitch);
+          return midi_to_frequency(element.note_pitch) + random_in_range(0, element.note_pitch);
+        });
+        break;
+      default:
+        afflicted_data = data_stack.note_stats.map(function (element) {
+          mapped_prediction_prob = map_num(p.probability, 0, 1, 0, element.note_pitch);
+          return midi_to_frequency(element.note_pitch);
+        });
+        break;
+    }
+
+    console.log(`afflicted_data: ${afflicted_data}`);
+
+    // predictions.push({ prediction: p.prediction, probability: p.probability });
+    // current_pred = { id: analysis.id, prediction: p.prediction, probability: p.probability };
+  });
+
+  // return { id, predictions };
+  // current_pred = { id, predictions };
+};
 
 
 

@@ -85,8 +85,8 @@ export var constructNewOscillatorData = function (text_and_midi, afflicted_data)
 
 export var PlayOscAtIndex = function (index) {
   if (index >= 0 && index < mark_collect_manager.osc_collector.length) {
-    // osc_collector[index].osc.Play();
     console.log(`@index: ${index}: ${Object.keys(mark_collect_manager[index])}`);
+    mark_collect_manager.osc_collector[index].osc.play();
   }
 };
 
