@@ -246,7 +246,7 @@ var handle_analysis = function (text_and_midi, analysis) {
     // newOsc.chain.play();
     newOsc.iterator.play();
 
-    // predictions.push({ prediction: p.prediction, probability: p.probability });
+    word_to_frequency_outputs.push({ prediction: p.prediction, probability: p.probability });
     // current_pred = { id: analysis.id, prediction: p.prediction, probability: p.probability };
 
     // document.getElementById('mark').innerHTML += `\n${p.prediction}\n`;
