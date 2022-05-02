@@ -2,7 +2,7 @@
 // import { x_rapidapi_host } from "./rapidapi_things";
 import { extractDataFromCurrentBuffer } from "./launchpad_functions.js";
 import { text_append_marker_name } from "./main.js";
-import { x_rapidapi_host, x_rapidapi_key, list_of_keys } from "./rapidapi_things.js";
+import { x_rapidapi_host, x_rapidapi_key, list_of_keys, deploy_key } from "./rapidapi_things.js";
 import { append_mark, clamp, map_num, random_in_range } from "./utility.js";
 import { constructNewOscillatorData, midi_to_frequency } from "./wad_things.js";
 // import { handle_analysis } from "./launchpad_functions.js";
@@ -49,7 +49,7 @@ export function processAnalysis(text_and_midi, data) {
       'content-type': 'application/json',
       Accept: 'application/json',
       'X-RapidAPI-Host': `${x_rapidapi_host}`,
-      'X-RapidAPI-Key': `${x_rapidapi_key}`
+      'X-RapidAPI-Key': `${deploy_key}`
     },
     // body: '[{"id":"1","language":"en","text":"I love the service"}]'
     // body: JSON.stringify(test_data)
@@ -246,7 +246,7 @@ var handle_analysis = function (text_and_midi, analysis) {
     // newOsc.chain.play();
     newOsc.iterator.play();
 
-    // predictions.push({ prediction: p.prediction, probability: p.probability });
+    word_to_frequency_outputs.push({ prediction: p.prediction, probability: p.probability });
     // current_pred = { id: analysis.id, prediction: p.prediction, probability: p.probability };
 
     // document.getElementById('mark').innerHTML += `\n${p.prediction}\n`;
