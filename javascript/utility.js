@@ -14,3 +14,10 @@ export var map_num = function (current, in_min, in_max, out_min, out_max) {
 export var random_in_range = function getRandomArbitrary(min, max) {
   return Math.random() * (max - min) + min;
 };
+
+
+export var append_mark = function (prediction, append_marker) {
+  let new_prediction = document.createElement('p');
+  new_prediction.innerHTML = prediction;
+  document.getElementById(append_marker).appendChild(new_prediction);
+};

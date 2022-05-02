@@ -14,6 +14,8 @@ export const noteOffVelocity = 0;
 export const padPressCommand = 144;
 export const enterKeyCommand = 176;
 export const inputName = `LPMiniMK3 MIDI`;
+export const enterKeyPairNoteName = 'enterKey';
+export const text_append_marker_name = 'mark';
 
 const midiIndexesInProgrammerMode = [];
 
@@ -22,10 +24,10 @@ const midiIndexesInProgrammerMode = [];
 
 for (let index = lowestProgrammerModeNote, currentRow = index + nextRowOffsetAmount; index <= highestProgrammerModeNote; index++) {
   // const element = lol[index];
-  console.log(`index: ${index} | currentRow: ${currentRow}`);
+  // console.log(`index: ${index} | currentRow: ${currentRow}`);
   midiIndexesInProgrammerMode.push(index);
   if (currentRow - index == nextRowDifferential) {
-    console.log(`next row at: index: ${index} | currentRow: ${currentRow}`);
+    // console.log(`next row at: index: ${index} | currentRow: ${currentRow}`);
     index += nextRowDifferential - 1;
     currentRow += 10;
   }
@@ -110,15 +112,18 @@ var pairNotesAndWords = function constructWordNoteValuePairArray(notes, words) {
       newArr.push({ note_pitch: note, word: word, note_on: false, keypress_duration: 0.0, duration_setinterval_id: null });
     }
   }
+  // entry to track how long enter key is pressed
+  newArr.push({ note_pitch: enterKeyCommand, word: enterKeyPairNoteName, note_on: false, keypress_duration: 0.0, duration_setinterval_id: null });
 
   return newArr;
 };
 
-var wordNotePairList = possible_notes.map(function (obj, index) {
-  var newObjList = {};
-  newObjList[launchpad_words[index]] = obj;
-  return newObjList;
-});
+
+// var wordNotePairList = possible_notes.map(function (obj, index) {
+//   var newObjList = {};
+//   newObjList[launchpad_words[index]] = obj;
+//   return newObjList;
+// });
 
 export var paired_note_words = pairNotesAndWords(possible_notes, launchpad_words);
 // export var paired_note_words = pairNotesAndWords(midiIndexesInProgrammerMode, launchpad_words);
@@ -132,10 +137,8 @@ console.log("words: \n" +
   launchpad_words
 );
 
-console.log("c: \n"
-);
 paired_note_words.forEach(element => {
-  console.log(element);
+  console.log(`paired_note_words: ${JSON.stringify(element)}`);
 });
 
 
