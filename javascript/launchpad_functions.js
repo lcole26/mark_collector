@@ -83,10 +83,13 @@ export function handleInput(input) {
     // clearAll();
     let result = extractDataFromCurrentBuffer(currentDataStack);
     console.log(`text result is: ${result.text}`);
+
     let formatted_text = formatData(current_formatted_data_id, default_language, result.text);
-    console.log(`formatted text: ${formatted_text}`);
+    result.note_stats.forEach(note_stat => {
+      console.log(`note_stat is: ${note_stat.note_pitch} | ${note_stat.keypress_duration}`);
+    });
     // let output = "";
-    let analysis = getAnalysis([formatted_text]);
+    // let analysis = getAnalysis([formatted_text]);
     // let analysis = getAnalysis2([formatted_text]);
     // console.log(`output: ${output}`);
     // if (analysis) {
@@ -116,7 +119,7 @@ export function handleInput(input) {
   // check if pad has been released
   if (keyval && command === padPressCommand && velocity === noteOffVelocity && input.srcElement.name === inputName) {
     console.log(`current_text is: ${JSON.stringify(currentDataStack)}`);
-    currentDataStack.push({ note: keyval.note_pitch, word: keyval.word, duration: keyval.keypress_duration });
+    currentDataStack.push({ note: keyval.note_pitch, word: keyval.word, keypress_duration: keyval.keypress_duration });
     let found_note = paired_note_words.find(e => e.note_pitch == note);
     if (found_note && found_note.note_on === true && found_note.duration_setinterval_id !== null) {
       // found_note.note_on = false;
@@ -194,7 +197,7 @@ export var handle_analysis = function (analysis) {
     switch (p.prediction) {
       case 'anger':
         afflicted_data = data_stack.note_stats.map(e => {
-          midi_to_frequency(e.note_pitch);
+          (midi_to_frequency(e.note_pitch) / mapped_prediction_prob);
         });
         break;
       case 'disgust':
@@ -204,7 +207,7 @@ export var handle_analysis = function (analysis) {
         break;
       case 'fear':
         afflicted_data = data_stack.note_stats.map(e => {
-          midi_to_frequency(e.note_pitch) - 5.0;
+          midi_to_frequency(e.note_pitch) * random_in_range(mapped_prediction_prob, e.note_pitch);
         });
         break;
       case 'joy':
@@ -234,6 +237,8 @@ export var handle_analysis = function (analysis) {
         break;
     }
 
+    console.log(`afflicted_data: ${afflicted_data}`);
+
     // predictions.push({ prediction: p.prediction, probability: p.probability });
     // current_pred = { id: analysis.id, prediction: p.prediction, probability: p.probability };
   });
@@ -252,7 +257,7 @@ var extractDataFromCurrentBuffer = function () {
   currentDataStack.forEach(element => {
     console.log(`current word pair is ${JSON.stringify(element)}`);
     wordArray += `${element.word} `;
-    note_statistics_array.push({ note_pitch: element.note, duration_pressed: element.keypress_duration });
+    note_statistics_array.push({ note_pitch: element.note, keypress_duration: element.keypress_duration });
   });
 
   // console.log(`values are: ${currentText.values()}`);
